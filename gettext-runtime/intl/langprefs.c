@@ -219,7 +219,7 @@ _nl_language_preferences_win32_system (HMODULE kernel32)
   /* Ignore the warning on mingw here. mingw has a wrong definition of the last
      parameter type of ENUMRESLANGPROC.  */
   EnumResourceLanguages (kernel32, RT_VERSION, MAKEINTRESOURCE (1),
-                         ret_first_language, (LONG_PTR)&languages);
+                         (ENUMRESLANGPROC)ret_first_language, (LONG_PTR)&languages);
   return languages;
 }
 
@@ -329,7 +329,7 @@ _nl_language_preferences_default (void)
     if (!cache_initialized && getenv ("GETTEXT_MUI") != NULL)
       {
         const char *languages = NULL;
-        HMODULE kernel32 = GetModuleHandle ("kernel32");
+        HMODULE kernel32 = GetModuleHandle (L"kernel32");
 
         if (kernel32 != NULL)
           languages = _nl_language_preferences_win32_mui (kernel32);

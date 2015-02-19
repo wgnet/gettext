@@ -62,7 +62,7 @@ static char *last_logfilename = NULL;
 static FILE *last_logfile = NULL;
 __libc_lock_define_initialized (static, lock)
 
-static inline void
+static void
 _nl_log_untranslated_locked (const char *logfilename, const char *domainname,
                              const char *msgid1, const char *msgid2, int plural)
 {

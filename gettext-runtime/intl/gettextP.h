@@ -113,7 +113,7 @@ extern char *libintl_dcigettext (const char *__domainname,
 # include <byteswap.h>
 # define SWAP(i) bswap_32 (i)
 #else
-static inline nls_uint32
+static nls_uint32
 # ifdef __cplusplus
 SWAP (nls_uint32 i)
 # else

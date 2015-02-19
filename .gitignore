@@ -10,3 +10,4 @@
 /configure
 /Makefile.in
 
+/gettext-runtime/intl/build

@@ -33,6 +33,14 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifndef uint64_t
+typedef unsigned __int64 uint64_t;
+#endif 
+
+#ifndef uintmax_t
+typedef uint64_t uintmax_t;
+#endif
+
 #ifdef __GNUC__
 # undef  alloca
 # define alloca __builtin_alloca
