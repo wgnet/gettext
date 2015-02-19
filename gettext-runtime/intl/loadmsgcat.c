@@ -33,13 +33,8 @@ This must come before <config.h> because <config.h> may include
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifndef uint64_t
-typedef unsigned __int64 uint64_t;
-#endif 
+#include "wg_hooks_internal.h"
 
-#ifndef uintmax_t
-typedef uint64_t uintmax_t;
-#endif
 
 #ifdef __GNUC__
 # undef  alloca
@@ -833,69 +828,78 @@ struct binding *domainbinding)
 		goto out;
 
 	/* Try to open the addressed file.  */
-	fd = open (domain_file->filename, O_RDONLY | O_BINARY);
-	if (fd == -1)
-		goto out;
-
-	/* We must know about the size of the file.  */
-	if (
-#ifdef _LIBC
-		__builtin_expect (fstat64 (fd, &st) != 0, 0)
-#else
-		__builtin_expect (fstat (fd, &st) != 0, 0)
-#endif
-		|| __builtin_expect ((size = (size_t) st.st_size) != st.st_size, 0)
-		|| __builtin_expect (size < sizeof (struct mo_file_header), 0))
-		/* Something went wrong.  */
-		goto out;
-
-#ifdef HAVE_MMAP
-	/* Now we are ready to load the file.  If mmap() is available we try
-	this first.  If not available or it failed we try to load it.  */
-	data = (struct mo_file_header *) mmap (NULL, size, PROT_READ,
-		MAP_PRIVATE, fd, 0);
-
-	if (__builtin_expect (data != (struct mo_file_header *) -1, 1))
+	if (fileReaderHook != NULL)
 	{
-		/* mmap() call was successful.  */
-		close (fd);
-		fd = -1;
-		use_mmap = 1;
+		struct hooked_file_info externalFileData = fileReaderHook(domain_file->filename);
+		data = (struct mo_file_header *)externalFileData.data;
+		size = externalFileData.size;
 	}
-#endif
-
-	/* If the data is not yet available (i.e. mmap'ed) we try to load
-	it manually.  */
-	if (data == (struct mo_file_header *) -1)
+	else
 	{
-		size_t to_read;
-		char *read_ptr;
-
-		data = (struct mo_file_header *) malloc (size);
-		if (data == NULL)
+		fd = open (domain_file->filename, O_RDONLY | O_BINARY);
+		if (fd == -1)
 			goto out;
 
-		to_read = size;
-		read_ptr = (char *) data;
-		do
-		{
-			long int nb = (long int) read (fd, read_ptr, to_read);
-			if (nb <= 0)
-			{
-#ifdef EINTR
-				if (nb == -1 && errno == EINTR)
-					continue;
+		/* We must know about the size of the file.  */
+		if (
+#ifdef _LIBC
+			__builtin_expect (fstat64 (fd, &st) != 0, 0)
+#else
+			__builtin_expect (fstat (fd, &st) != 0, 0)
 #endif
-				goto out;
-			}
-			read_ptr += nb;
-			to_read -= nb;
-		}
-		while (to_read > 0);
+			|| __builtin_expect ((size = (size_t) st.st_size) != st.st_size, 0)
+			|| __builtin_expect (size < sizeof (struct mo_file_header), 0))
+			/* Something went wrong.  */
+			goto out;
 
-		close (fd);
-		fd = -1;
-	}
+#ifdef HAVE_MMAP
+		/* Now we are ready to load the file.  If mmap() is available we try
+		this first.  If not available or it failed we try to load it.  */
+		data = (struct mo_file_header *) mmap (NULL, size, PROT_READ,
+			MAP_PRIVATE, fd, 0);
+
+		if (__builtin_expect (data != (struct mo_file_header *) -1, 1))
+		{
+			/* mmap() call was successful.  */
+			close (fd);
+			fd = -1;
+			use_mmap = 1;
+		}
+#endif
+
+		/* If the data is not yet available (i.e. mmap'ed) we try to load 
+		it manually.  */
+		if (data == (struct mo_file_header *) -1)
+		{
+			size_t to_read;
+			char *read_ptr;
+
+			data = (struct mo_file_header *) malloc (size);
+			if (data == NULL)
+				goto out;
+
+			to_read = size;
+			read_ptr = (char *) data;
+			do
+			{
+				long int nb = (long int) read (fd, read_ptr, to_read);
+				if (nb <= 0)
+				{
+	#ifdef EINTR
+					if (nb == -1 && errno == EINTR)
+						continue;
+	#endif
+					goto out;
+				}
+				read_ptr += nb;
+				to_read -= nb;
+			}
+			while (to_read > 0);
+
+			close (fd);
+			fd = -1;
+		}
+	} // not fileReaderHook
 
 	/* Using the magic number we can test whether it really is a message
 	catalog file.  */

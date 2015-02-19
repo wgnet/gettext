@@ -29,6 +29,8 @@
 
 #include <sys/types.h>
 
+#include "wg_hooks_internal.h"
+
 #ifdef __GNUC__
 # define alloca __builtin_alloca
 # define HAVE_ALLOCA 1
@@ -1516,6 +1518,9 @@ guess_category_value (int category, const char *categoryname)
   int locale_defaulted;
 # endif
 #endif
+
+  if (getLocaleHook != NULL)
+	  return getLocaleHook();
 
   /* We use the settings in the following order:
      1. The value of the environment variable 'LANGUAGE'.  This is a GNU

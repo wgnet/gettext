@@ -94,7 +94,9 @@ SET( ALL_SRCS
 	tsearch.c
 	tsearch.h
 	version.c
-#	wg_hooks.c
+	wg_hooks.c
+	wg_hooks.h
+	wg_hooks_internal.h
 	libgnuintl.h
 	config.h
 )

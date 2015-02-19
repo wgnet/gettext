@@ -318,14 +318,6 @@ extern DLL_ROUTINE char *bind_textdomain_codeset (const char *__domainname,
        _INTL_ASM (libintl_bind_textdomain_codeset);
 #endif
 
-struct hooked_file_info
-{
-	size_t size;
-	char* data;
-};
-typedef char* (*gettext_locale_hook)();
-typedef struct hooked_file_info (*gettext_file_reader_hook)(const char* filePath);
-
 extern DLL_ROUTINE void setGetLocaleHook(gettext_locale_hook);
 extern DLL_ROUTINE void setFileReaderHook(gettext_file_reader_hook);
 
