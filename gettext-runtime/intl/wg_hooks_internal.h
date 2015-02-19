@@ -1,6 +1,8 @@
 #ifndef WG_HOOKS_INTERNAL_GUARD
 #define WG_HOOKS_INTERNAL_GUARD
 
+#include <stddef.h>		/* Get size_t.  */
+
 #include "wg_hooks.h"
 
 extern gettext_file_reader_hook fileReaderHook;

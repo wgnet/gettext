@@ -35,6 +35,14 @@ This must come before <config.h> because <config.h> may include
 
 #include "wg_hooks_internal.h"
 
+#ifndef uint64_t
+typedef unsigned __int64 uint64_t;
+#endif 
+
+#ifndef uintmax_t
+typedef uint64_t uintmax_t;
+#endif
+
 
 #ifdef __GNUC__
 # undef  alloca
