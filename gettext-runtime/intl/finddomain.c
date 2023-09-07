@@ -191,10 +191,14 @@ out:
 }
 
 
-#ifdef _LIBC
+
 /* This is called from iconv/gconv_db.c's free_mem, as locales must
-   be freed before freeing gconv steps arrays.  */
-void __libc_freeres_fn_section
+   be freed before freeing gconv steps arrays.  
+*/
+void 
+#ifdef _LIBC
+__libc_freeres_fn_section
+#endif // ifdef _LIBC
 _nl_finddomain_subfreeres ()
 {
   struct loaded_l10nfile *runp = _nl_loaded_domains;
@@ -208,5 +212,14 @@ _nl_finddomain_subfreeres ()
       free ((char *) here->filename);
       free (here);
     }
+  /* We need to reinitialise the linked list. As we are using it
+	 at runtime and the link list may be accessed and point to
+	bad memory. */
+  _nl_loaded_domains = NULL;
 }
-#endif
+	  
+
+void wg_flush_loaded_domain_cache()
+{
+    _nl_finddomain_subfreeres();
+}

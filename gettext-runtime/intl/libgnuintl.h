@@ -19,6 +19,8 @@
 #ifndef _LIBINTL_H
 #define _LIBINTL_H 1
 
+#include "wg_hooks_internal.h"
+
 /* On Windows, variables that may be in a DLL must be marked specially.  */
 
 #if (defined _MSC_VER && defined _DLL) && !defined IN_RELOCWRAPPER
@@ -318,6 +320,7 @@ extern DLL_ROUTINE char *bind_textdomain_codeset (const char *__domainname,
        _INTL_ASM (libintl_bind_textdomain_codeset);
 #endif
 
+extern DLL_ROUTINE void wg_flush_loaded_domain_cache(void);
 extern DLL_ROUTINE void setGetLocaleHook(gettext_locale_hook);
 extern DLL_ROUTINE void setFileReaderHook(gettext_file_reader_hook);
 
