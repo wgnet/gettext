@@ -1316,29 +1316,34 @@ done:
 }
 
 
-#ifdef _LIBC
 void
-	internal_function __libc_freeres_fn_section
+	internal_function 
+#ifdef _LIBC
+	__libc_freeres_fn_section  // libc macro see. libc-symbols
+#endif
 	_nl_unload_domain (struct loaded_domain *domain)
 {
 	size_t i;
 
-	if (domain->plural != &__gettext_germanic_plural)
-		__gettext_free_exp ((struct expression *) domain->plural);
+	if (domain->plural != &GERMANIC_PLURAL)
+		FREE_EXPRESSION ((struct expression *) domain->plural);
 
 	for (i = 0; i < domain->nconversions; i++)
 	{
 		struct converted_domain *convd = &domain->conversions[i];
 
 		free (convd->encoding);
+#if HAVE_ICONV
 		if (convd->conv_tab != NULL && convd->conv_tab != (char **) -1)
 			free (convd->conv_tab);
 		if (convd->conv != (__gconv_t) -1)
 			__gconv_close (convd->conv);
+#endif // HAVE_ICONV
 	}
 	free (domain->conversions);
+#ifdef _LIBC
 	__libc_rwlock_fini (domain->conversions_lock);
-
+#endif
 	free (domain->malloced);
 
 # ifdef _POSIX_MAPPED_FILES
@@ -1350,4 +1355,3 @@ void
 
 	free (domain);
 }
-#endif
